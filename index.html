@@ -4,12 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Background Remover</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        #preview, #result { max-width: 100%; height: auto; margin-top: 20px; }
+        #downloadBtn { display: none; margin-top: 20px; }
+    </style>
 </head>
 <body>
     <h1>Image Background Remover</h1>
-    <form action="/cgi-bin/remove_background.py" method="post" enctype="multipart/form-data">
-        <input type="file" name="image" accept="image/*" required>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="image" accept="image/*" required id="imageInput">
         <input type="submit" value="Remove Background">
     </form>
+    <canvas id="preview"></canvas>
+    <img id="result" style="display:none;">
+    <a id="downloadBtn" href="#" download="processed_image.png">Download Processed Image</a>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const imageInput = document.getElementById('imageInput');
+        const preview = document.getElementById('preview');
+        const result = document.getElementById('result');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const ctx = preview.getContext('2d');
+
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    preview.width = img.width;
+                    preview.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        });
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/cgi-bin/remove_background.py', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    result.src = data.processed_image;
+                    result.style.display = 'block';
+                    downloadBtn.href = data.processed_image;
+                    downloadBtn.style.display = 'inline-block';
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
 </body>
 </html>
