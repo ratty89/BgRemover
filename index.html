@@ -10,6 +10,7 @@
         #downloadBtn { display: none; margin-top: 20px; }
         #loading { display: none; }
         #thresholdValue { display: inline-block; margin-left: 10px; }
+        #refinementTools { display: none; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -26,6 +27,12 @@
     <div id="loading">Processing image... Please wait.</div>
     <canvas id="preview"></canvas>
     <img id="result" style="display:none;">
+    <div id="refinementTools">
+        <button id="brushBtn">Brush</button>
+        <button id="eraserBtn">Eraser</button>
+        <input type="range" id="brushSize" min="1" max="50" value="10">
+        <button id="applyRefinement">Apply Refinement</button>
+    </div>
     <a id="downloadBtn" href="#" download="processed_image.png">Download Processed Image</a>
 
     <script>
@@ -37,7 +44,15 @@
         const loading = document.getElementById('loading');
         const threshold = document.getElementById('threshold');
         const thresholdValue = document.getElementById('thresholdValue');
+        const refinementTools = document.getElementById('refinementTools');
+        const brushBtn = document.getElementById('brushBtn');
+        const eraserBtn = document.getElementById('eraserBtn');
+        const brushSize = document.getElementById('brushSize');
+        const applyRefinement = document.getElementById('applyRefinement');
         const ctx = preview.getContext('2d');
+
+        let isDrawing = false;
+        let currentTool = 'brush';
 
         threshold.addEventListener('input', function() {
             thresholdValue.textContent = this.value;
@@ -64,6 +79,7 @@
             loading.style.display = 'block';
             result.style.display = 'none';
             downloadBtn.style.display = 'none';
+            refinementTools.style.display = 'none';
 
             fetch('/cgi-bin/remove_background.py', {
                 method: 'POST',
@@ -79,6 +95,12 @@
                         result.style.display = 'block';
                         downloadBtn.href = jsonData.processed_image;
                         downloadBtn.style.display = 'inline-block';
+                        refinementTools.style.display = 'block';
+                        
+                        // Set up refinement canvas
+                        preview.width = result.width;
+                        preview.height = result.height;
+                        ctx.drawImage(result, 0, 0);
                     } else {
                         throw new Error(jsonData.error || 'Unknown error occurred');
                     }
@@ -92,6 +114,37 @@
                 console.error('Error:', error);
                 alert('Error: ' + error.message);
             });
+        });
+
+        brushBtn.addEventListener('click', () => currentTool = 'brush');
+        eraserBtn.addEventListener('click', () => currentTool = 'eraser');
+
+        preview.addEventListener('mousedown', startDrawing);
+        preview.addEventListener('mousemove', draw);
+        preview.addEventListener('mouseup', stopDrawing);
+        preview.addEventListener('mouseout', stopDrawing);
+
+        function startDrawing(e) {
+            isDrawing = true;
+            draw(e);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            ctx.beginPath();
+            ctx.arc(e.offsetX, e.offsetY, brushSize.value, 0, Math.PI * 2);
+            ctx.fillStyle = currentTool === 'brush' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)';
+            ctx.fill();
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        applyRefinement.addEventListener('click', () => {
+            const refinedImageData = preview.toDataURL('image/png');
+            result.src = refinedImageData;
+            downloadBtn.href = refinedImageData;
         });
     </script>
 </body>
