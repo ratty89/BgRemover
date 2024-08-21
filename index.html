@@ -3,148 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Background Remover</title>
+    <title>Image Processor</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-        #preview, #result { max-width: 100%; height: auto; margin-top: 20px; }
-        #downloadBtn { display: none; margin-top: 20px; }
-        #loading { display: none; }
-        #thresholdValue { display: inline-block; margin-left: 10px; }
-        #refinementTools { display: none; margin-top: 20px; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #34495e;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        input, select, button {
+            padding: 0.5rem;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .preview {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+        }
+        .preview canvas {
+            border: 1px solid #ecf0f1;
+        }
     </style>
 </head>
 <body>
-    <h1>Image Background Remover</h1>
-    <form id="uploadForm" enctype="multipart/form-data">
-        <input type="file" name="image" accept="image/*" required id="imageInput">
-        <div>
-            <label for="threshold">Threshold:</label>
-            <input type="range" id="threshold" name="threshold" min="0" max="1" step="0.05" value="0.5">
-            <span id="thresholdValue">0.5</span>
+    <div class="container">
+        <h1>Image Processor</h1>
+        <form action="/process" method="post" enctype="multipart/form-data">
+            <input type="file" name="image" accept="image/*" required>
+            <div>
+                <input type="checkbox" id="remove_bg" name="remove_bg">
+                <label for="remove_bg">Remove Background</label>
+            </div>
+            <div>
+                <input type="checkbox" id="convert" name="convert">
+                <label for="convert">Convert Format</label>
+            </div>
+            <select name="output_format">
+                <option value="png">PNG</option>
+                <option value="jpg">JPG</option>
+                <option value="webp">WebP</option>
+            </select>
+            <button type="submit">Process Image</button>
+        </form>
+        <div class="preview">
+            <canvas id="inputPreview" width="200" height="200"></canvas>
+            <canvas id="outputPreview" width="200" height="200"></canvas>
         </div>
-        <input type="submit" value="Remove Background">
-    </form>
-    <div id="loading">Processing image... Please wait.</div>
-    <canvas id="preview"></canvas>
-    <img id="result" style="display:none;">
-    <div id="refinementTools">
-        <button id="brushBtn">Brush</button>
-        <button id="eraserBtn">Eraser</button>
-        <input type="range" id="brushSize" min="1" max="50" value="10">
-        <button id="applyRefinement">Apply Refinement</button>
     </div>
-    <a id="downloadBtn" href="#" download="processed_image.png">Download Processed Image</a>
-
     <script>
-        const form = document.getElementById('uploadForm');
-        const imageInput = document.getElementById('imageInput');
-        const preview = document.getElementById('preview');
-        const result = document.getElementById('result');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const loading = document.getElementById('loading');
-        const threshold = document.getElementById('threshold');
-        const thresholdValue = document.getElementById('thresholdValue');
-        const refinementTools = document.getElementById('refinementTools');
-        const brushBtn = document.getElementById('brushBtn');
-        const eraserBtn = document.getElementById('eraserBtn');
-        const brushSize = document.getElementById('brushSize');
-        const applyRefinement = document.getElementById('applyRefinement');
-        const ctx = preview.getContext('2d');
-
-        let isDrawing = false;
-        let currentTool = 'brush';
-
-        threshold.addEventListener('input', function() {
-            thresholdValue.textContent = this.value;
-        });
-
-        imageInput.addEventListener('change', function(e) {
+        document.querySelector('input[type="file"]').addEventListener('change', function(e) {
             const file = e.target.files[0];
             const reader = new FileReader();
             reader.onload = function(event) {
                 const img = new Image();
                 img.onload = function() {
-                    preview.width = img.width;
-                    preview.height = img.height;
-                    ctx.drawImage(img, 0, 0);
+                    const canvas = document.getElementById('inputPreview');
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                 }
                 img.src = event.target.result;
             }
             reader.readAsDataURL(file);
-        });
-
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            loading.style.display = 'block';
-            result.style.display = 'none';
-            downloadBtn.style.display = 'none';
-            refinementTools.style.display = 'none';
-
-            fetch('/cgi-bin/remove_background.py', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.text())
-            .then(data => {
-                loading.style.display = 'none';
-                try {
-                    const jsonData = JSON.parse(data);
-                    if (jsonData.success) {
-                        result.src = jsonData.processed_image;
-                        result.style.display = 'block';
-                        downloadBtn.href = jsonData.processed_image;
-                        downloadBtn.style.display = 'inline-block';
-                        refinementTools.style.display = 'block';
-                        
-                        // Set up refinement canvas
-                        preview.width = result.width;
-                        preview.height = result.height;
-                        ctx.drawImage(result, 0, 0);
-                    } else {
-                        throw new Error(jsonData.error || 'Unknown error occurred');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Error: ' + error.message);
-                }
-            })
-            .catch(error => {
-                loading.style.display = 'none';
-                console.error('Error:', error);
-                alert('Error: ' + error.message);
-            });
-        });
-
-        brushBtn.addEventListener('click', () => currentTool = 'brush');
-        eraserBtn.addEventListener('click', () => currentTool = 'eraser');
-
-        preview.addEventListener('mousedown', startDrawing);
-        preview.addEventListener('mousemove', draw);
-        preview.addEventListener('mouseup', stopDrawing);
-        preview.addEventListener('mouseout', stopDrawing);
-
-        function startDrawing(e) {
-            isDrawing = true;
-            draw(e);
-        }
-
-        function draw(e) {
-            if (!isDrawing) return;
-            ctx.beginPath();
-            ctx.arc(e.offsetX, e.offsetY, brushSize.value, 0, Math.PI * 2);
-            ctx.fillStyle = currentTool === 'brush' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)';
-            ctx.fill();
-        }
-
-        function stopDrawing() {
-            isDrawing = false;
-        }
-
-        applyRefinement.addEventListener('click', () => {
-            const refinedImageData = preview.toDataURL('image/png');
-            result.src = refinedImageData;
-            downloadBtn.href = refinedImageData;
         });
     </script>
 </body>
