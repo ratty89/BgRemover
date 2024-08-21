@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Processor</title>
+    <title>Image Tool</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -54,22 +54,23 @@
 </head>
 <body>
     <div class="container">
-        <h1>Image Processor</h1>
+        <h1>Image Tool</h1>
         <form action="/process" method="post" enctype="multipart/form-data">
             <input type="file" name="image" accept="image/*" required>
+            <select name="output_format">
+                <option value="">Convert image to:</option>
+                <option value="png">PNG</option>
+                <option value="jpg">JPG</option>
+                <option value="webp">WebP</option>
+            </select>
             <div>
                 <input type="checkbox" id="remove_bg" name="remove_bg">
                 <label for="remove_bg">Remove Background</label>
             </div>
             <div>
-                <input type="checkbox" id="convert" name="convert">
-                <label for="convert">Convert Format</label>
+                <input type="checkbox" id="upscale" name="upscale">
+                <label for="upscale">Upscale Image</label>
             </div>
-            <select name="output_format">
-                <option value="png">PNG</option>
-                <option value="jpg">JPG</option>
-                <option value="webp">WebP</option>
-            </select>
             <button type="submit">Process Image</button>
         </form>
         <div class="preview">
