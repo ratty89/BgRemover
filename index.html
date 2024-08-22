@@ -3,66 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Processing Tool</title>
-    <style>
-        body {
-            background-color: #2c2c2c;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
-        }
-        .container {
-            width: 50%;
-            margin: auto;
-            text-align: center;
-            padding: 20px;
-        }
-        .btn {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            cursor: pointer;
-        }
-        canvas {
-            border: 1px solid #ffffff;
-            margin-top: 20px;
-        }
-    </style>
+    <title>AI Image Processor</title>
 </head>
 <body>
-    <div class="container">
-        <h1>Image Processing Tool</h1>
-        <form method="POST" enctype="multipart/form-data">
-            <input type="file" name="image" id="imageInput" accept="image/*" required><br><br>
-            <label><input type="checkbox" name="convert"> Convert Image Format</label><br>
-            <select name="format">
-                <option value="PNG">PNG</option>
-                <option value="JPEG">JPEG</option>
-                <option value="WEBP">WEBP</option>
-            </select><br><br>
-            <label><input type="checkbox" name="remove_bg"> Remove Background</label><br><br>
-            <label><input type="checkbox" name="upscale"> Upscale Image</label><br><br>
-            <button type="submit" class="btn">Process Image</button>
-        </form>
-        <h2>Before</h2>
-        <canvas id="beforeCanvas" width="300" height="300"></canvas>
-        <h2>After</h2>
-        <canvas id="afterCanvas" width="300" height="300"></canvas>
-    </div>
-    <script>
-        document.getElementById('imageInput').onchange = function(event) {
-            const reader = new FileReader();
-            reader.onload = function() {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.getElementById('beforeCanvas');
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                }
-                img.src = reader.result;
-            }
-            reader.readAsDataURL(event.target.files[0]);
-        };
-    </script>
+    <h1>AI Image Processor</h1>
+    <form id="upload-form" action="/process" method="post" enctype="multipart/form-data">
+        <input type="file" name="image" accept="image/*" required><br>
+        <label for="format">Convert to:</label>
+        <select name="format" id="format">
+            <option value="png">PNG</option>
+            <option value="jpg">JPEG</option>
+            <option value="webp">WebP</option>
+        </select><br>
+        <label for="remove_bg">Remove Background:</label>
+        <input type="checkbox" id="remove_bg" name="remove_bg"><br>
+        <label for="upscale">Upscale:</label>
+        <input type="checkbox" id="upscale" name="upscale"><br>
+        <button type="submit">Process Image</button>
+    </form>
 </body>
 </html>
