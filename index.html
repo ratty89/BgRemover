@@ -3,23 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Image Processor</title>
+    <title>Image Processing Tool</title>
+    <style>
+        body {
+            background-color: #2c2c2c;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        input[type="file"] {
+            padding: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin-top: 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-    <h1>AI Image Processor</h1>
-    <form id="upload-form" action="/process" method="post" enctype="multipart/form-data">
-        <input type="file" name="image" accept="image/*" required><br>
-        <label for="format">Convert to:</label>
-        <select name="format" id="format">
-            <option value="png">PNG</option>
-            <option value="jpg">JPEG</option>
-            <option value="webp">WebP</option>
-        </select><br>
-        <label for="remove_bg">Remove Background:</label>
-        <input type="checkbox" id="remove_bg" name="remove_bg"><br>
-        <label for="upscale">Upscale:</label>
-        <input type="checkbox" id="upscale" name="upscale"><br>
-        <button type="submit">Process Image</button>
+    <h1>Image Processing Tool</h1>
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="file" accept="image/*" required><br><br>
+        
+        <label><input type="checkbox" name="format"> Convert Image Format</label><br>
+        <select name="format">
+            <option value="PNG">PNG</option>
+            <option value="JPEG">JPEG</option>
+            <option value="WEBP">WEBP</option>
+        </select><br><br>
+
+        <label><input type="checkbox" name="remove_bg"> Remove Background</label><br><br>
+
+        <label><input type="checkbox" name="upscale"> Upscale Image</label><br><br>
+        
+        <button type="submit">Upload and Process</button>
     </form>
 </body>
 </html>
