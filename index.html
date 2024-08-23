@@ -6,67 +6,62 @@
     <title>Image Processing Tool</title>
     <style>
         body {
-            background-color: #2e2e2e;
-            color: #ffffff;
             font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
         }
-        .container {
-            max-width: 600px;
-            text-align: center;
+        form {
+            margin-bottom: 20px;
         }
-        .option-group {
-            margin: 10px 0;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            margin: 10px 0;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        input[type="file"] {
+        input, select, button {
             margin: 10px 0;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Image Processing Tool</h1>
-        <form id="upload-form" action="/process" method="post" enctype="multipart/form-data">
-            <div class="option-group">
-                <label for="file">Choose image:</label>
-                <input type="file" id="file" name="file" required>
-            </div>
-            <div class="option-group">
-                <input type="checkbox" id="convert" name="convert">
-                <label for="convert">Convert Format</label>
-                <select id="format" name="format">
-                    <option value="png">PNG</option>
-                    <option value="jpg">JPEG</option>
-                    <option value="webp">WEBP</option>
-                </select>
-            </div>
-            <div class="option-group">
-                <input type="checkbox" id="remove-bg" name="remove_bg">
-                <label for="remove-bg">Remove Background</label>
-            </div>
-            <div class="option-group">
-                <input type="checkbox" id="upscale" name="upscale">
-                <label for="upscale">Upscale Image</label>
-            </div>
-            <button type="submit">Process Image</button>
-        </form>
-        <div id="result"></div>
-    </div>
+    <h1>Image Processing Tool</h1>
+    <form id="imageForm" enctype="multipart/form-data">
+        <input type="file" id="imageInput" accept="image/*" required><br>
+        <select id="convertFormat">
+            <option value="">No conversion</option>
+            <option value="png">PNG</option>
+            <option value="jpeg">JPEG</option>
+            <option value="webp">WebP</option>
+        </select><br>
+        <input type="checkbox" id="removeBackground"> Remove background<br>
+        <input type="checkbox" id="upscale"> Upscale image<br>
+        <button type="submit">Process Image</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('imageForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('image', document.getElementById('imageInput').files[0]);
+            formData.append('convertFormat', document.getElementById('convertFormat').value);
+            formData.append('removeBackground', document.getElementById('removeBackground').checked);
+            formData.append('upscale', document.getElementById('upscale').checked);
+
+            const response = await fetch('/process', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'processed_image.' + (document.getElementById('convertFormat').value || 'png');
+                a.click();
+                URL.revokeObjectURL(url);
+                document.getElementById('result').innerHTML = 'Image processed and downloaded successfully!';
+            } else {
+                document.getElementById('result').innerHTML = 'Error processing image.';
+            }
+        });
+    </script>
 </body>
 </html>
