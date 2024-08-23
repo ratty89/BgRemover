@@ -3,61 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Processing</title>
+    <title>Image Processing Tool</title>
     <style>
         body {
-            background-color: #2c2c2c;
-            color: #f0f0f0;
+            background-color: #2e2e2e;
+            color: #ffffff;
             font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
         }
         .container {
             max-width: 600px;
-            margin: auto;
-            padding: 20px;
-            background-color: #3c3c3c;
-            border-radius: 8px;
+            text-align: center;
         }
-        input[type="file"], select {
-            width: 100%;
-            padding: 10px;
+        .option-group {
             margin: 10px 0;
-            border-radius: 5px;
-            border: 1px solid #555;
         }
         button {
+            background-color: #4CAF50;
+            color: white;
             padding: 10px 20px;
-            background-color: #5a5a5a;
+            margin: 10px 0;
             border: none;
-            border-radius: 5px;
-            color: #f0f0f0;
             cursor: pointer;
-            font-size: 16px;
         }
         button:hover {
-            background-color: #7a7a7a;
+            background-color: #45a049;
+        }
+        input[type="file"] {
+            margin: 10px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Image Processing</h1>
-        <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
-            <input type="file" name="image" accept="image/*" required><br>
-            <label for="convertFormat">Convert Image Format:</label>
-            <select name="convertFormat" id="convertFormat">
-                <option value="">None</option>
-                <option value="png">Convert to PNG</option>
-                <option value="jpg">Convert to JPG</option>
-                <option value="webp">Convert to WEBP</option>
-            </select><br>
-            <input type="checkbox" id="removeBg" name="removeBg">
-            <label for="removeBg">Remove Background</label><br>
-            <input type="checkbox" id="upscale" name="upscale">
-            <label for="upscale">Upscale Image</label><br>
+        <h1>Image Processing Tool</h1>
+        <form id="upload-form" action="/process" method="post" enctype="multipart/form-data">
+            <div class="option-group">
+                <label for="file">Choose image:</label>
+                <input type="file" id="file" name="file" required>
+            </div>
+            <div class="option-group">
+                <input type="checkbox" id="convert" name="convert">
+                <label for="convert">Convert Format</label>
+                <select id="format" name="format">
+                    <option value="png">PNG</option>
+                    <option value="jpg">JPEG</option>
+                    <option value="webp">WEBP</option>
+                </select>
+            </div>
+            <div class="option-group">
+                <input type="checkbox" id="remove-bg" name="remove_bg">
+                <label for="remove-bg">Remove Background</label>
+            </div>
+            <div class="option-group">
+                <input type="checkbox" id="upscale" name="upscale">
+                <label for="upscale">Upscale Image</label>
+            </div>
             <button type="submit">Process Image</button>
         </form>
+        <div id="result"></div>
     </div>
 </body>
 </html>
